@@ -5,8 +5,7 @@ from .serializer import ExpenseSerializer,BudgetSerializer
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Expenses
-
+from .models import Expenses,Budget,get_budget_remaining
 # Create your views here.
 
 @api_view(["POST"])
@@ -53,3 +52,16 @@ def CreateBudget(request):
         serializer.save()
         return Response({"message":"Budget Created","data":serializer.data},status=status.HTTP_200_OK)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def getRemainingBudgetAmount(request):
+    user = request.user
+    category = request.GET.get('category')
+    try:
+        remaining_budget = get_budget_remaining(user=user,category=category)
+        return Response({"remaining_amount": remaining_budget}, status=status.HTTP_200_OK)
+    except Budget.DoesNotExist:
+        return Response({"error": "Budget not found"}, status=status.HTTP_404_NOT_FOUND)

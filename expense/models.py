@@ -1,6 +1,8 @@
 from django.db import models
 from accounts.models import CustomUser
 from .emailsender import send_email_to_user
+from django.db.models import Sum
+
 
 # Create your models here.
 
@@ -39,23 +41,7 @@ class Expenses(models.Model):
     def __str__(self):
         return f"{self.user.username} - Expense"
 
-    def create(self, validated_data):
-        user = validated_data['user']
-        amount = validated_data['amount']
-        category = validated_data['category']
 
-        try:
-            budget = Budget.objects.get(user=user,category=category)
-            if amount>budget.limit:
-                message = f"Dear {self.user.username}, The Amount for the expense is above the budget limit"
-                send_email_to_user(email=self.user.email,subject="Amount Exceeds Budget Limit",message=message)
-            else:
-                budget.limit -= amount
-                budget.save()
-        except Budget.DoesNotExist:
-            pass
-        expense = Expenses.objects.create(user=user, amount=amount, category=category, description=validated_data['description'])
-        return expense
 
 
 class Budget(models.Model):
@@ -69,4 +55,13 @@ class Budget(models.Model):
         return f"{self.user.username} - {self.category} Budget"
     
 
+
+
+def get_budget_remaining(user, category):
+    budget = Budget.objects.get(user=user, category=category)
+    total_expenses = Expenses.objects.filter(user=user, category=category).aggregate(Sum('amount'))['amount__sum']
+    if total_expenses is None:
+        total_expenses = 0
+    remaining_amount = budget.limit - total_expenses
+    return remaining_amount
     
