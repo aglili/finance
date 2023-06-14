@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
-from .serializer import ExpenseSerializer,BudgetSerializer
+from .serializer import ExpenseSerializer,BudgetSerializer,BudgetUpdateSerializer
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -65,3 +65,24 @@ def getRemainingBudgetAmount(request):
         return Response({"remaining_amount": remaining_budget}, status=status.HTTP_200_OK)
     except Budget.DoesNotExist:
         return Response({"error": "Budget not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def updateBudget(request):
+    budget_id = request.data.get('id')
+    if not budget_id:
+        return Response({"error": "Budget ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        budget = Budget.objects.get(id=budget_id, user=request.user)
+    except Budget.DoesNotExist:
+        return Response({"error": "Budget not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = BudgetUpdateSerializer(budget, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

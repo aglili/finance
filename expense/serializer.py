@@ -38,3 +38,17 @@ class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
         fields = ['user', 'category', 'limit', 'start_date', 'end_date']
+
+
+
+class BudgetUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Budget
+        fields = ['limit', 'start_date', 'end_date']
+
+    def update(self, instance, validated_data):
+        instance.limit = validated_data.get('limit', instance.limit)
+        instance.start_date = validated_data.get('start_date', instance.start_date)
+        instance.end_date = validated_data.get('end_date', instance.end_date)
+        instance.save()
+        return instance

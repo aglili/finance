@@ -46,7 +46,7 @@ class Expenses(models.Model):
 
 class Budget(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    category = models.CharField(max_length=200)
+    category = models.CharField(max_length=200,unique=True)
     limit = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField()
