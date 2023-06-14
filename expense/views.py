@@ -28,3 +28,17 @@ def getUserExpenses(request):
     expenses = Expenses.objects.filter(user=user)
     serializer = ExpenseSerializer(expenses,many=True)
     return Response({"data":serializer.data},status=status.HTTP_200_OK)
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def getUserExpensesByMonth(request):
+    user = request.user
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+
+    expenses = Expenses.objects.filter(user=user,date__month=month,date__year=year)
+    serializer = ExpenseSerializer(expenses,many=True)
+    return Response({"data":serializer.data},status=status.HTTP_200_OK)
