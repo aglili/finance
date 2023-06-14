@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
-from .serializer import ExpenseSerializer
+from .serializer import ExpenseSerializer,BudgetSerializer
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -42,3 +42,14 @@ def getUserExpensesByMonth(request):
     expenses = Expenses.objects.filter(user=user,date__month=month,date__year=year)
     serializer = ExpenseSerializer(expenses,many=True)
     return Response({"data":serializer.data},status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def CreateBudget(request):
+    serializer = BudgetSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message":"Budget Created","data":serializer.data},status=status.HTTP_200_OK)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
