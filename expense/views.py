@@ -86,3 +86,19 @@ def updateBudget(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+@permission_classes([])
+@authentication_classes([JWTAuthentication])
+def deleteBudget(request):
+    budget_id = request.data.get('id')
+    if not budget_id:
+        return Response({"error": "Budget ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        budget = Budget.objects.get(id=budget_id, user=request.user)
+        budget.delete()
+        return Response({"message": "Budget deleted"}, status=status.HTTP_200_OK)
+    except Budget.DoesNotExist:
+        return Response({"error": "Budget not found"}, status=status.HTTP_404_NOT_FOUND)

@@ -9,5 +9,6 @@ urlpatterns=[
     path("expenses/all/",views.getUserExpenses,name="get_user_expenses"),
     path("budget/",views.CreateBudget,name="create_budget"),
     path("budget/update/",views.updateBudget,name="update_budget"),
+    path("budget/delete/",views.deleteBudget,name='delete_budget'),
     path("budget/remaining/",views.getRemainingBudgetAmount,name="get_remaining_budget_amount"),
 ]
